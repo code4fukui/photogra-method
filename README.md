@@ -20,3 +20,5 @@ Object Capture by Apple を使った、フォトグラメトリ作成アプリ (
 
 - https://fukuno.jig.jp/3494
 - https://fukuno.jig.jp/3489
+- [福井高専ドローン空撮](https://fukuno.jig.jp/3522)
+- 
