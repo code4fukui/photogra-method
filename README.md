@@ -14,7 +14,7 @@ Object Capture by Apple を使った、フォトグラメトリ作成アプリ (
 
 ## Object Capture by Apple
 
-[https://developer.apple.com/jp/augmented-reality/object-capture/](Object Capture - 拡張現実 - Apple Developer)
+[Object Capture - 拡張現実 - Apple Developer](https://developer.apple.com/jp/augmented-reality/object-capture/)
 
 ## blog
 
