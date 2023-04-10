@@ -2,9 +2,7 @@
 
 Object Capture by Apple を使った、フォトグラメトリ作成アプリ (for Mac Monterey)
 
-入力写真が入ったフォルダをドロップすると変換スタート、完成するとUSDZ形式の3Dモデルを開きます
-
-出力フォルダから好きな場所へ移動してください
+動画や入力写真が入ったフォルダをドロップすると変換スタート、完成するとUSDZ形式の3Dモデルを開きます
 
 ## 初回起動時
 
@@ -21,3 +19,4 @@ Object Capture by Apple を使った、フォトグラメトリ作成アプリ (
 - https://fukuno.jig.jp/3494
 - https://fukuno.jig.jp/3489
 - [福井高専ドローン空撮](https://fukuno.jig.jp/3522)
+- https://fukuno.jig.jp/3910
