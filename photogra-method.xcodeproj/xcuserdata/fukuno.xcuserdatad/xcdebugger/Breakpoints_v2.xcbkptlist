@@ -7,48 +7,80 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "8A9D107E-1C7C-43E5-8821-2DCEF634A06B"
+            uuid = "FC0F1F3F-431E-43D3-934F-1BE730776A91"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "photogra-method/ContentView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "198"
-            endingLineNumber = "198"
-            landmarkName = "makeObjectCapture(url:view:)"
+            startingLineNumber = "139"
+            endingLineNumber = "139"
+            landmarkName = "convertVideoToJPEG(videoPath:outputFolder:fps:)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "F12A7BBD-B174-4B36-9F05-B5FF4590FA32"
+            uuid = "F88B622F-52E4-4C0C-B189-BC23B6F93F56"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "photogra-method/ContentView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "140"
-            endingLineNumber = "140"
-            landmarkName = "makeObjectCapture(url:view:)"
+            startingLineNumber = "273"
+            endingLineNumber = "273"
+            landmarkName = "makeObjectCapture(url:detail:fps:view:)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "56215637-9453-462B-9CB3-17A66014567C"
+            uuid = "EEA62FA9-34C6-4C3B-B527-6E72D0D1203C"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "photogra-method/ContentView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "210"
-            endingLineNumber = "210"
-            landmarkName = "makeObjectCapture(url:view:)"
+            startingLineNumber = "296"
+            endingLineNumber = "296"
+            landmarkName = "makeObjectCapture(url:detail:fps:view:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2E32219C-A80A-41EB-AE78-7F1B517F637F"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "photogra-method/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "297"
+            endingLineNumber = "297"
+            landmarkName = "makeObjectCapture(url:detail:fps:view:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DE23B977-27AC-41EC-8A02-E647C6B588E4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "photogra-method/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "280"
+            endingLineNumber = "280"
+            landmarkName = "makeObjectCapture(url:detail:fps:view:)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

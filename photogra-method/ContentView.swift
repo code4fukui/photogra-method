@@ -9,13 +9,18 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View {
-    @State var file: String = "変換元フォルダ"
+    @State var file: String = "変換元フォルダ or 動画ファイル"
     @State var message: String = "変換中のメッセージ"
+    @State private var seldetail = "reduced"
+    let details = ["preview", "reduced", "medium", "full", "raw"]
+    @State private var selfps = "2"
+    let fpss = ["0.1", "0.5", "1", "2", "3", "5", "10"]
+
 
     var body: some View {
         VStack(spacing: 20) {
             ///Image(systemName: "plus")
-            Text("いろんな角度からの写真が入ったフォルダを\nここにドロップすると変換スタート！")
+            Text("いろんな角度からの写真が入ったフォルダか動画をここにドロップ")
                 //.lineLimit(nil)
                 //.fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -27,12 +32,12 @@ struct ContentView: View {
                     #if os(iOS)
                         providers.first!.loadFileRepresentation(forTypeIdentifier: UTType.item.identifier) {
                             url, _ in
-                            message = describeDroppedURL(url!, ContentView.self)
+                            message = describeDroppedURL(url!, detail: seldetail, ContentView.self)
                         }
                     #else
                         _ = providers.first!.loadObject(ofClass: NSPasteboard.PasteboardType.self) {
                             pasteboardItem, _ in
-                            message = describeDroppedURL(URL(string: pasteboardItem!.rawValue)!, view: self)
+                            message = describeDroppedURL(URL(string: pasteboardItem!.rawValue)!, detail: seldetail, fps: selfps, view: self)
                         }
                     #endif
 
@@ -51,7 +56,19 @@ struct ContentView: View {
                 .background(Color.white)
                 .border(Color.black)
                 //.frame(width: 500, alignment: .center)
+            
+            Picker("3Dモデルの解像度", selection: $seldetail) {
+                ForEach(details, id: \.self) {
+                    Text($0)
+                }
+            }
+            Picker("1秒あたりの静止画枚数（動画用）", selection: $selfps) {
+                ForEach(fpss, id: \.self) {
+                    Text($0)
+                }
+            }
 
+            /*
             Button(action: {
                 let url = FileManager.default.currentDirectoryPath
                 NSWorkspace.shared.open(URL(fileURLWithPath: "\(url)"))
@@ -60,44 +77,84 @@ struct ContentView: View {
             }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
+            */
         } .padding()
     }
 }
 
-func describeDroppedURL(_ url: URL, view: ContentView) -> String {
-    do {
-        var messageRows: [String] = []
+func describeDroppedURL(_ url: URL, detail: String, fps: String, view: ContentView) -> String {
+    var messageRows: [String] = []
+    /*
+    if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == false {
+        messageRows.append("Dropped file named `\(url.lastPathComponent)`")
 
-        if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == false {
-            messageRows.append("Dropped file named `\(url.lastPathComponent)`")
+        messageRows.append("  which starts with `\(try String(contentsOf: url).components(separatedBy: "\n")[0]))`")
+    } else {
+        */
+        messageRows.append("Dropped folder named `\(url.lastPathComponent)`")
+        
+        makeObjectCapture(url: url, detail: detail, fps: fps, view: view)
+        //messageRows.append("\(res)")
+        /*
+        for childUrl in try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: []) {
+            messageRows.append("  Containing file named `\(childUrl.lastPathComponent)`")
 
-            messageRows.append("  which starts with `\(try String(contentsOf: url).components(separatedBy: "\n")[0]))`")
-        } else {
-            messageRows.append("Dropped folder named `\(url.lastPathComponent)`")
-            
-            makeObjectCapture(url: url, view: view)
-            //messageRows.append("\(res)")
-            /*
-            for childUrl in try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: []) {
-                messageRows.append("  Containing file named `\(childUrl.lastPathComponent)`")
-
-                messageRows.append("    which starts with `\((try String(contentsOf: childUrl)).components(separatedBy: "\n")[0])`")
-            }
-             */
+            messageRows.append("    which starts with `\((try String(contentsOf: childUrl)).components(separatedBy: "\n")[0])`")
         }
+         */
+    //}
 
-        return messageRows.joined(separator: "\n")
-    } catch {
-        return "Error: \(error)"
-    }
+    return messageRows.joined(separator: "\n")
 }
 
 import Foundation
 import os
 import RealityKit
 
-func makeObjectCapture(url: URL, view: ContentView) {
+//let videoPath = "/Volumes/Untitled/DCIM/100MEDIA/DJI_0796.MP4"
+//let videoPath = "/Users/fukuno/Downloads/week-test/DJI_0798.MP4"
+//let videoPath = "/Users/fukuno/Library/Containers/jp.jig.fukuno.photogra-method/Data/DJI_0798.MP4"
+//let outputFolder = "/Users/fukuno/Downloads/week-test/"
+let fps = 2
 
+func runCommand(path: String, arguments: [String]) -> String? {
+    let task = Process()
+    task.launchPath = path
+    task.arguments = arguments
+    //task.launchPath = "/bin/bash"
+    // task.arguments = ["-c", path] + arguments
+    
+    let pipe = Pipe()
+    task.standardOutput = pipe
+    task.standardError = pipe
+    task.launch()
+    
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    let output = String(data: data, encoding: .utf8)
+    
+    return output
+}
+
+func convertVideoToJPEG(videoPath: String, outputFolder: String, fps: String) {
+    let command = "/opt/homebrew/bin/ffmpeg"
+    //let command = "ffmpeg"
+    let arguments = [
+        "-i",
+        videoPath,
+        "-qmin",
+        "1",
+        "-q",
+        "1",
+        "-r",
+        fps,
+        "\(outputFolder)/%04d.jpg"
+    ]
+    
+    let res = runCommand(path: command, arguments: arguments)
+    print(res ?? "no res")
+}
+
+func makeObjectCaptureFromFolder(url: URL, detail: String, view: ContentView) {
     /*
      https://developer.apple.com/documentation/realitykit/photogrammetrysession/request/detail
     Triangles  Estimated File Size
@@ -110,9 +167,9 @@ func makeObjectCapture(url: URL, view: ContentView) {
      //let detail = PhotogrammetrySession.Request.Detail.reduced // 13.5MB(onojo)
      //let detail = PhotogrammetrySession.Request.Detail.medium // 42MB(onojo)
      */
-    let sdetail = "reduced"
+    //let sdetail = "reduced"
     func getDetail() -> PhotogrammetrySession.Request.Detail {
-        switch (sdetail) {
+        switch (detail) {
             case "preview":
                 return PhotogrammetrySession.Request.Detail.preview
             case "reduced":
@@ -133,8 +190,8 @@ func makeObjectCapture(url: URL, view: ContentView) {
 
     //let inputFolder = url.absoluteString // arguments[1]
     let inputFolder = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "/"
-    //let outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
-    let outputFilename = url.lastPathComponent + ".usdz"
+    let outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
+    //let outputFilename = url.lastPathComponent + ".usdz" // for default directory
     //let inputFolder = "/Users/fukuno/data/photo/house/img1/"
     //let outputFilename = "/Users/fukuno/data/photo/house/img1-test.usdz"
     print(inputFolder)
@@ -208,6 +265,37 @@ func makeObjectCapture(url: URL, view: ContentView) {
         }
     } catch let e {
         print(e)
+    }
+}
+
+
+func makeObjectCapture(url: URL, detail: String, fps: String, view: ContentView) {
+    let imageExtensions = ["mov", "mp4", "avi"]
+    if imageExtensions.contains(url.pathExtension.lowercased()) {
+        let videoPath = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent
+        print(videoPath)
+        let outputFolder = String(videoPath.dropLast(url.pathExtension.count + 1))
+        
+        // mkdir
+        let fileManager = FileManager.default
+        do {
+            try fileManager.removeItem(atPath: outputFolder)
+        } catch _ {
+            //print(e)
+        }
+        do {
+            try fileManager.createDirectory(atPath: outputFolder, withIntermediateDirectories: true, attributes: nil)
+        } catch let e {
+            print(e)
+        }
+        view.file = videoPath
+        view.message = "動画を静止画に変換中..."
+        convertVideoToJPEG(videoPath: videoPath, outputFolder: outputFolder, fps: fps)
+        let url2 = URL(fileURLWithPath: outputFolder)
+        print(url2)
+        makeObjectCaptureFromFolder(url: url2, detail: detail, view: view)
+    } else {
+        makeObjectCaptureFromFolder(url: url, detail: detail, view: view)
     }
 }
 
