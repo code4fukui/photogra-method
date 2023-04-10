@@ -1,4 +1,4 @@
-# photogramethod
+# photogramethod フォトグラメソッド
 
 Object Capture by Apple を使った、フォトグラメトリ作成アプリ (for Mac Monterey)
 
