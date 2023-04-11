@@ -4,7 +4,14 @@ Object Capture by Apple を使った、フォトグラメトリ作成アプリ (
 
 動画や入力写真が入ったフォルダをドロップすると変換スタート、完成するとUSDZ形式の3Dモデルを開きます
 
+* 要 [ffmpeg](https://ffmpeg.org/)
+
 ## 初回起動時
+
+```sh
+brew install ffmpeg
+```
+* 要 [Homebrew](https://brew.sh/)
 
 セキュリティ制限により開きません
 
