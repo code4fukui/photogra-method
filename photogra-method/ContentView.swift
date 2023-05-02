@@ -13,6 +13,10 @@ struct ContentView: View {
     @State var message: String = "変換中のメッセージ"
     @State private var seldetail = "reduced"
     let details = ["preview", "reduced", "medium", "full", "raw"]
+    @State private var selsensitivity = "normal"
+    let sensitivities = ["normal", "high"]
+    @State private var selorder = "sequential"
+    let orders = ["sequential", "unordered"]
     @State private var selfps = "2"
     let fpss = ["0.1", "0.5", "1", "2", "3", "5", "10"]
 
@@ -25,7 +29,8 @@ struct ContentView: View {
                 //.fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-                .background(Color.white)
+                //.background(Color.white)
+                .border(Color.black)
                 .onDrop(of: [.fileURL, .item], isTargeted: nil, perform: {
                     providers, _ in
 
@@ -37,7 +42,14 @@ struct ContentView: View {
                     #else
                         _ = providers.first!.loadObject(ofClass: NSPasteboard.PasteboardType.self) {
                             pasteboardItem, _ in
-                            message = describeDroppedURL(URL(string: pasteboardItem!.rawValue)!, detail: seldetail, fps: selfps, view: self)
+                            message = describeDroppedURL(
+                                URL(string: pasteboardItem!.rawValue)!,
+                                detail: seldetail,
+                                sensitivity: selsensitivity,
+                                order: selorder,
+                                fps: selfps,
+                                view: self
+                            )
                         }
                     #endif
 
@@ -46,19 +58,29 @@ struct ContentView: View {
             Text(file)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-                .background(Color.white)
+                //.background(Color.white)
                 .border(Color.black)
                 //.frame(width: 500, alignment: .center)
             
             Text(message)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
-                .background(Color.white)
+                //.background(Color.white)
                 .border(Color.black)
                 //.frame(width: 500, alignment: .center)
             
             Picker("3Dモデルの解像度", selection: $seldetail) {
                 ForEach(details, id: \.self) {
+                    Text($0)
+                }
+            }
+            Picker("位置推定精度", selection: $selsensitivity) {
+                ForEach(sensitivities, id: \.self) {
+                    Text($0)
+                }
+            }
+            Picker("画像連続性", selection: $selorder) {
+                ForEach(orders, id: \.self) {
                     Text($0)
                 }
             }
@@ -82,7 +104,7 @@ struct ContentView: View {
     }
 }
 
-func describeDroppedURL(_ url: URL, detail: String, fps: String, view: ContentView) -> String {
+func describeDroppedURL(_ url: URL, detail: String, sensitivity: String, order: String, fps: String, view: ContentView) -> String {
     var messageRows: [String] = []
     /*
     if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == false {
@@ -93,7 +115,7 @@ func describeDroppedURL(_ url: URL, detail: String, fps: String, view: ContentVi
         */
         messageRows.append("Dropped folder named `\(url.lastPathComponent)`")
         
-        makeObjectCapture(url: url, detail: detail, fps: fps, view: view)
+        makeObjectCapture(url: url, detail: detail, sensitivity: sensitivity, order: order, fps: fps, view: view)
         //messageRows.append("\(res)")
         /*
         for childUrl in try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: []) {
@@ -154,7 +176,7 @@ func convertVideoToJPEG(videoPath: String, outputFolder: String, fps: String) {
     print(res ?? "no res")
 }
 
-func makeObjectCaptureFromFolder(url: URL, detail: String, view: ContentView) {
+func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, order: String, view: ContentView) {
     /*
      https://developer.apple.com/documentation/realitykit/photogrammetrysession/request/detail
     Triangles  Estimated File Size
@@ -185,9 +207,27 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, view: ContentView) {
                 Foundation.exit(1)
         }
     }
+    func getSensitivity() -> PhotogrammetrySession.Configuration.FeatureSensitivity {
+        switch (sensitivity) {
+            case "high":
+                return PhotogrammetrySession.Configuration.FeatureSensitivity.high // The session uses a slower, more sensitive algorithm to detect landmarks.
+            default:
+            return PhotogrammetrySession.Configuration.FeatureSensitivity.normal // The session uses the default algorithm to detect landmarks.
+        }
+    }
+    func getOrder() -> PhotogrammetrySession.Configuration.SampleOrdering {
+        switch (order) {
+            case "sequential":
+                return PhotogrammetrySession.Configuration.SampleOrdering.sequential
+            default:
+                return PhotogrammetrySession.Configuration.SampleOrdering.unordered
+        }
+    }
 
     let detail = getDetail()
-
+    let sensitivity = getSensitivity()
+    let order = getOrder()
+    
     //let inputFolder = url.absoluteString // arguments[1]
     let inputFolder = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "/"
     let outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
@@ -202,9 +242,8 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, view: ContentView) {
     let outputUrl = URL(fileURLWithPath: outputFilename, isDirectory: false)
     print(FileManager.default.currentDirectoryPath)
     var configure = PhotogrammetrySession.Configuration()
-    configure.sampleOrdering = PhotogrammetrySession.Configuration.SampleOrdering.unordered
-    //configure.featureSensitivity = PhotogrammetrySession.Configuration.FeatureSensitivity.high // The session uses a slower, more sensitive algorithm to detect landmarks.
-    configure.featureSensitivity = PhotogrammetrySession.Configuration.FeatureSensitivity.normal // The session uses the default algorithm to detect landmarks.
+    configure.sampleOrdering = order
+    configure.featureSensitivity = sensitivity
     
     do {
             
@@ -269,7 +308,7 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, view: ContentView) {
 }
 
 
-func makeObjectCapture(url: URL, detail: String, fps: String, view: ContentView) {
+func makeObjectCapture(url: URL, detail: String, sensitivity: String, order: String, fps: String, view: ContentView) {
     let imageExtensions = ["mov", "mp4", "avi"]
     if imageExtensions.contains(url.pathExtension.lowercased()) {
         let videoPath = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent
@@ -293,9 +332,9 @@ func makeObjectCapture(url: URL, detail: String, fps: String, view: ContentView)
         convertVideoToJPEG(videoPath: videoPath, outputFolder: outputFolder, fps: fps)
         let url2 = URL(fileURLWithPath: outputFolder)
         print(url2)
-        makeObjectCaptureFromFolder(url: url2, detail: detail, view: view)
+        makeObjectCaptureFromFolder(url: url2, detail: detail, sensitivity: sensitivity, order: order, view: view)
     } else {
-        makeObjectCaptureFromFolder(url: url, detail: detail, view: view)
+        makeObjectCaptureFromFolder(url: url, detail: detail, sensitivity: sensitivity, order: order, view: view)
     }
 }
 
