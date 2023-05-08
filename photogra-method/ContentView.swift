@@ -31,6 +31,7 @@ struct ContentView: View {
                 .padding()
                 //.background(Color.white)
                 .border(Color.black)
+            /*
                 .onDrop(of: [.fileURL, .item], isTargeted: nil, perform: {
                     providers, _ in
 
@@ -40,6 +41,7 @@ struct ContentView: View {
                             message = describeDroppedURL(url!, detail: seldetail, ContentView.self)
                         }
                     #else
+                        
                         _ = providers.first!.loadObject(ofClass: NSPasteboard.PasteboardType.self) {
                             pasteboardItem, _ in
                             message = describeDroppedURL(
@@ -51,10 +53,29 @@ struct ContentView: View {
                                 view: self
                             )
                         }
-                    #endif
+             */
+                    .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                        if let loadableProvider = providers.first(where: { $0.canLoadObject(ofClass: URL.self) }) {
+                            _ = loadableProvider.loadObject(ofClass: URL.self) { fileURL, _ in
+                                DispatchQueue.main.async {
+                                    //importer.open(zipArchiveURL: fileURL)
+                                    message = describeDroppedURL(
+                                        URL(string: fileURL!.absoluteString)!,
+                                        detail: seldetail,
+                                        sensitivity: selsensitivity,
+                                        order: selorder,
+                                        fps: selfps,
+                                        view: self
+                                    )
 
-                    return true
-                })
+                                }
+                            }
+                            return true
+                        }
+                        return false
+                    }
+//                #endif
+
             Text(file)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding()
