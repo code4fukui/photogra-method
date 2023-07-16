@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		693FDE872A641C53006FF2EE /* RealityFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE862A641C53006FF2EE /* RealityFoundation.framework */; };
+		693FDE892A6420FD006FF2EE /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE882A6420FD006FF2EE /* RealityKit.framework */; };
+		693FDE8B2A642161006FF2EE /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE8A2A642161006FF2EE /* Metal.framework */; };
+		693FDE932A64219B006FF2EE /* libswiftMetal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE922A64218E006FF2EE /* libswiftMetal.tbd */; };
+		693FDE942A6421A1006FF2EE /* libswiftMetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE902A64218E006FF2EE /* libswiftMetalKit.tbd */; };
 		6998215327C1297B00A6ED71 /* photogra_methodApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6998215227C1297B00A6ED71 /* photogra_methodApp.swift */; };
 		6998215527C1297B00A6ED71 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6998215427C1297B00A6ED71 /* ContentView.swift */; };
 		6998215727C1297C00A6ED71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6998215627C1297C00A6ED71 /* Assets.xcassets */; };
@@ -14,6 +19,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		693FDE862A641C53006FF2EE /* RealityFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityFoundation.framework; path = System/Library/Frameworks/RealityFoundation.framework; sourceTree = SDKROOT; };
+		693FDE882A6420FD006FF2EE /* RealityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityKit.framework; path = System/Library/Frameworks/RealityKit.framework; sourceTree = SDKROOT; };
+		693FDE8A2A642161006FF2EE /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		693FDE8D2A64218E006FF2EE /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		693FDE8E2A64218E006FF2EE /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
+		693FDE8F2A64218E006FF2EE /* MetalPerformanceShadersGraph.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShadersGraph.framework; path = System/Library/Frameworks/MetalPerformanceShadersGraph.framework; sourceTree = SDKROOT; };
+		693FDE902A64218E006FF2EE /* libswiftMetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftMetalKit.tbd; path = usr/lib/swift/libswiftMetalKit.tbd; sourceTree = SDKROOT; };
+		693FDE912A64218E006FF2EE /* MetalFX.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalFX.framework; path = System/Library/Frameworks/MetalFX.framework; sourceTree = SDKROOT; };
+		693FDE922A64218E006FF2EE /* libswiftMetal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftMetal.tbd; path = usr/lib/swift/libswiftMetal.tbd; sourceTree = SDKROOT; };
 		6998214F27C1297B00A6ED71 /* photogra-method.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "photogra-method.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6998215227C1297B00A6ED71 /* photogra_methodApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = photogra_methodApp.swift; sourceTree = "<group>"; };
 		6998215427C1297B00A6ED71 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -27,17 +41,39 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				693FDE892A6420FD006FF2EE /* RealityKit.framework in Frameworks */,
+				693FDE932A64219B006FF2EE /* libswiftMetal.tbd in Frameworks */,
+				693FDE8B2A642161006FF2EE /* Metal.framework in Frameworks */,
+				693FDE872A641C53006FF2EE /* RealityFoundation.framework in Frameworks */,
+				693FDE942A6421A1006FF2EE /* libswiftMetalKit.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		693FDE852A641C53006FF2EE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				693FDE922A64218E006FF2EE /* libswiftMetal.tbd */,
+				693FDE902A64218E006FF2EE /* libswiftMetalKit.tbd */,
+				693FDE912A64218E006FF2EE /* MetalFX.framework */,
+				693FDE8D2A64218E006FF2EE /* MetalKit.framework */,
+				693FDE8E2A64218E006FF2EE /* MetalPerformanceShaders.framework */,
+				693FDE8F2A64218E006FF2EE /* MetalPerformanceShadersGraph.framework */,
+				693FDE8A2A642161006FF2EE /* Metal.framework */,
+				693FDE882A6420FD006FF2EE /* RealityKit.framework */,
+				693FDE862A641C53006FF2EE /* RealityFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		6998214627C1297B00A6ED71 = {
 			isa = PBXGroup;
 			children = (
 				6998215127C1297B00A6ED71 /* photogra-method */,
 				6998215027C1297B00A6ED71 /* Products */,
+				693FDE852A641C53006FF2EE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -97,7 +133,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1320;
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					6998214E27C1297B00A6ED71 = {
 						CreatedOnToolsVersion = 13.2.1;
@@ -181,6 +217,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -242,6 +279,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -272,6 +310,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"photogra-method/Preview Content\"";
 				DEVELOPMENT_TEAM = A2TF2C92PA;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -282,6 +321,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/swift",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
@@ -304,6 +348,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"photogra-method/Preview Content\"";
 				DEVELOPMENT_TEAM = A2TF2C92PA;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -314,6 +359,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/swift",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-weak_framework",

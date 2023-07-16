@@ -13,13 +13,13 @@ struct ContentView: View {
     @State var message: String = "変換中のメッセージ"
     @State private var seldetail = "reduced"
     let details = ["preview", "reduced", "medium", "full", "raw"]
-    @State private var selsensitivity = "normal"
+    @State private var selsensitivity = "high"
     let sensitivities = ["normal", "high"]
     @State private var selorder = "sequential"
     let orders = ["sequential", "unordered"]
     @State private var selfps = "2"
-    let fpss = ["0.1", "0.5", "1", "2", "3", "5", "10"]
-
+    let fpss = ["0.1", "0.5", "1", "2", "3", "5", "10", "24", "30", "60"]
+ 
 
     var body: some View {
         VStack(spacing: 20) {
@@ -57,7 +57,7 @@ struct ContentView: View {
                     .onDrop(of: [.fileURL], isTargeted: nil) { providers in
                         if let loadableProvider = providers.first(where: { $0.canLoadObject(ofClass: URL.self) }) {
                             _ = loadableProvider.loadObject(ofClass: URL.self) { fileURL, _ in
-                                DispatchQueue.main.async {
+                                DispatchQueue.global().async {
                                     //importer.open(zipArchiveURL: fileURL)
                                     message = describeDroppedURL(
                                         URL(string: fileURL!.absoluteString)!,
@@ -233,7 +233,7 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
             case "high":
                 return PhotogrammetrySession.Configuration.FeatureSensitivity.high // The session uses a slower, more sensitive algorithm to detect landmarks.
             default:
-            return PhotogrammetrySession.Configuration.FeatureSensitivity.normal // The session uses the default algorithm to detect landmarks.
+                return PhotogrammetrySession.Configuration.FeatureSensitivity.normal // The session uses the default algorithm to detect landmarks.
         }
     }
     func getOrder() -> PhotogrammetrySession.Configuration.SampleOrdering {
@@ -267,7 +267,11 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
     configure.featureSensitivity = sensitivity
     
     do {
-            
+        guard PhotogrammetrySession.isSupported else {
+            // Inform user and don't proceed with reconstruction.
+            print("not supported PhotogrammetrySession")
+            return
+        }
         let session = try PhotogrammetrySession(
             input: inputFolderUrl,
             configuration: configure
@@ -302,7 +306,9 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
                         print("Output: automatskippedSample")
                     case .automaticDownsampling:
                         print("Output: automaticDownsampling")
-                    @unknown default:
+                    //case .requestProgressInfo(_, _):
+                    //    break;
+                @unknown default:
                         print("Output: unhandled message")
                 }
             }
