@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		693FDE872A641C53006FF2EE /* RealityFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE862A641C53006FF2EE /* RealityFoundation.framework */; };
-		693FDE892A6420FD006FF2EE /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE882A6420FD006FF2EE /* RealityKit.framework */; };
-		693FDE8B2A642161006FF2EE /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE8A2A642161006FF2EE /* Metal.framework */; };
-		693FDE932A64219B006FF2EE /* libswiftMetal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE922A64218E006FF2EE /* libswiftMetal.tbd */; };
-		693FDE942A6421A1006FF2EE /* libswiftMetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 693FDE902A64218E006FF2EE /* libswiftMetalKit.tbd */; };
 		6998215327C1297B00A6ED71 /* photogra_methodApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6998215227C1297B00A6ED71 /* photogra_methodApp.swift */; };
 		6998215527C1297B00A6ED71 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6998215427C1297B00A6ED71 /* ContentView.swift */; };
 		6998215727C1297C00A6ED71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6998215627C1297C00A6ED71 /* Assets.xcassets */; };
@@ -41,11 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				693FDE892A6420FD006FF2EE /* RealityKit.framework in Frameworks */,
-				693FDE932A64219B006FF2EE /* libswiftMetal.tbd in Frameworks */,
-				693FDE8B2A642161006FF2EE /* Metal.framework in Frameworks */,
-				693FDE872A641C53006FF2EE /* RealityFoundation.framework in Frameworks */,
-				693FDE942A6421A1006FF2EE /* libswiftMetalKit.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
