@@ -251,7 +251,15 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
     
     //let inputFolder = url.absoluteString // arguments[1]
     let inputFolder = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "/"
-    let outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
+    var outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
+    for i in 2...10000 {
+        let checkValidation = FileManager.default
+        if (checkValidation.fileExists(atPath: outputFilename)) {
+            outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "_" + String(i) + ".usdz"
+        } else {
+            break
+        }
+    }
     //let outputFilename = url.lastPathComponent + ".usdz" // for default directory
     //let inputFolder = "/Users/fukuno/data/photo/house/img1/"
     //let outputFilename = "/Users/fukuno/data/photo/house/img1-test.usdz"
@@ -306,9 +314,11 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
                         print("Output: automatskippedSample")
                     case .automaticDownsampling:
                         print("Output: automaticDownsampling")
-                    //case .requestProgressInfo(_, _):
-                    //    break;
-                @unknown default:
+                    case .requestProgressInfo(_, _):
+                        print("Output: requestProgressInfo")
+                    case .stitchingIncomplete:
+                        print("Output: stitchingIncomplete")
+                    @unknown default:
                         print("Output: unhandled message")
                 }
             }
