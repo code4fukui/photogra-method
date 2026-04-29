@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @State var file: String = "変換元フォルダ or 動画ファイル"
     @State var message: String = "変換中のメッセージ"
+    @State private var isDropTargeted = false
     @State private var seldetail = "reduced"
     let details = ["preview", "reduced", "medium", "full", "raw"]
     @State private var selsensitivity = "high"
@@ -22,132 +23,162 @@ struct ContentView: View {
  
 
     var body: some View {
-        VStack(spacing: 20) {
-            ///Image(systemName: "plus")
-            Text("いろんな角度からの写真が入ったフォルダか動画をここにドロップ")
-                //.lineLimit(nil)
-                //.fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-                //.background(Color.white)
-                .border(Color.black)
-            /*
-                .onDrop(of: [.fileURL, .item], isTargeted: nil, perform: {
-                    providers, _ in
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("photogra-method")
+                    .font(.title2.weight(.semibold))
+                Text("写真フォルダまたは動画からUSDZモデルを生成")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
-                    #if os(iOS)
-                        providers.first!.loadFileRepresentation(forTypeIdentifier: UTType.item.identifier) {
-                            url, _ in
-                            message = describeDroppedURL(url!, detail: seldetail, ContentView.self)
-                        }
-                    #else
-                        
-                        _ = providers.first!.loadObject(ofClass: NSPasteboard.PasteboardType.self) {
-                            pasteboardItem, _ in
-                            message = describeDroppedURL(
-                                URL(string: pasteboardItem!.rawValue)!,
-                                detail: seldetail,
-                                sensitivity: selsensitivity,
-                                order: selorder,
-                                fps: selfps,
-                                view: self
-                            )
-                        }
-             */
-                    .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-                        if let loadableProvider = providers.first(where: { $0.canLoadObject(ofClass: URL.self) }) {
-                            _ = loadableProvider.loadObject(ofClass: URL.self) { fileURL, _ in
-                                DispatchQueue.global().async {
-                                    //importer.open(zipArchiveURL: fileURL)
-                                    message = describeDroppedURL(
-                                        URL(string: fileURL!.absoluteString)!,
-                                        detail: seldetail,
-                                        sensitivity: selsensitivity,
-                                        order: selorder,
-                                        fps: selfps,
-                                        view: self
-                                    )
+            dropArea
 
+            GroupBox("状態") {
+                VStack(alignment: .leading, spacing: 10) {
+                    statusRow(title: "入力", value: file)
+                    Divider()
+                    statusRow(title: "進捗", value: message)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 4)
+            }
+
+            HStack(alignment: .top, spacing: 14) {
+                GroupBox("動画") {
+                    optionPicker("静止画枚数 / 秒", selection: $selfps, values: fpss)
+                }
+
+                GroupBox("3Dモデル") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        optionPicker("解像度", selection: $seldetail, values: details)
+                        optionPicker("位置推定精度", selection: $selsensitivity, values: sensitivities)
+                        optionPicker("画像連続性", selection: $selorder, values: orders)
+                    }
+                }
+            }
+        }
+        .padding(22)
+        .frame(minWidth: 560, idealWidth: 640, maxWidth: .infinity, minHeight: 430, alignment: .topLeading)
+    }
+
+    private var dropArea: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "tray.and.arrow.down")
+                .font(.system(size: 30, weight: .medium))
+                .foregroundColor(isDropTargeted ? .accentColor : .secondary)
+                .frame(width: 44, height: 44)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("ここにドロップ")
+                    .font(.headline)
+                Text("写真が入ったフォルダ、またはMOV / MP4 / AVI")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
+        .background(isDropTargeted ? Color.accentColor.opacity(0.12) : Color(NSColor.controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(isDropTargeted ? Color.accentColor : Color.secondary.opacity(0.35), style: StrokeStyle(lineWidth: 1.5, dash: [7, 5]))
+        )
+        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+            handleDrop(providers)
+        }
+    }
+
+    private func statusRow(title: String, value: String) -> some View {
+        Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 0) {
+            GridRow {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 44, alignment: .leading)
+                Text(value)
+                    .font(.body.monospaced())
+                    .lineLimit(2)
+                    .textSelection(.enabled)
+            }
+        }
+    }
+
+    private func optionPicker(_ title: String, selection: Binding<String>, values: [String]) -> some View {
+        Picker(title, selection: selection) {
+            ForEach(values, id: \.self) {
+                Text($0)
+            }
+        }
+        .pickerStyle(.menu)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        if let loadableProvider = providers.first(where: { $0.canLoadObject(ofClass: URL.self) }) {
+            _ = loadableProvider.loadObject(ofClass: URL.self) { fileURL, _ in
+                guard let fileURL else {
+                    Task { @MainActor in
+                        message = "ファイルを読み込めませんでした"
+                    }
+                    return
+                }
+
+                Task { @MainActor in
+                    let detail = seldetail
+                    let sensitivity = selsensitivity
+                    let order = selorder
+                    let fps = selfps
+
+                    Task.detached(priority: .userInitiated) {
+                        await processDroppedURL(
+                            fileURL,
+                            detail: detail,
+                            sensitivity: sensitivity,
+                            order: order,
+                            fps: fps,
+                            onFileChange: { newFile in
+                                await MainActor.run {
+                                    file = newFile
+                                }
+                            },
+                            onMessageChange: { newMessage in
+                                await MainActor.run {
+                                    message = newMessage
                                 }
                             }
-                            return true
-                        }
-                        return false
+                        )
                     }
-//                #endif
-
-            Text(file)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-                //.background(Color.white)
-                .border(Color.black)
-                //.frame(width: 500, alignment: .center)
-            
-            Text(message)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-                //.background(Color.white)
-                .border(Color.black)
-                //.frame(width: 500, alignment: .center)
-            
-            Picker("3Dモデルの解像度", selection: $seldetail) {
-                ForEach(details, id: \.self) {
-                    Text($0)
                 }
             }
-            Picker("位置推定精度", selection: $selsensitivity) {
-                ForEach(sensitivities, id: \.self) {
-                    Text($0)
-                }
-            }
-            Picker("画像連続性", selection: $selorder) {
-                ForEach(orders, id: \.self) {
-                    Text($0)
-                }
-            }
-            Picker("1秒あたりの静止画枚数（動画用）", selection: $selfps) {
-                ForEach(fpss, id: \.self) {
-                    Text($0)
-                }
-            }
-
-            /*
-            Button(action: {
-                let url = FileManager.default.currentDirectoryPath
-                NSWorkspace.shared.open(URL(fileURLWithPath: "\(url)"))
-            }) {
-                Text("生成した3Dモデルファイルができるフォルダを開く")
-            }
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-            */
-        } .padding()
+            return true
+        }
+        return false
     }
 }
 
-func describeDroppedURL(_ url: URL, detail: String, sensitivity: String, order: String, fps: String, view: ContentView) -> String {
-    var messageRows: [String] = []
-    /*
-    if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == false {
-        messageRows.append("Dropped file named `\(url.lastPathComponent)`")
-
-        messageRows.append("  which starts with `\(try String(contentsOf: url).components(separatedBy: "\n")[0]))`")
-    } else {
-        */
-        messageRows.append("Dropped folder named `\(url.lastPathComponent)`")
-        
-        makeObjectCapture(url: url, detail: detail, sensitivity: sensitivity, order: order, fps: fps, view: view)
-        //messageRows.append("\(res)")
-        /*
-        for childUrl in try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: []) {
-            messageRows.append("  Containing file named `\(childUrl.lastPathComponent)`")
-
-            messageRows.append("    which starts with `\((try String(contentsOf: childUrl)).components(separatedBy: "\n")[0])`")
-        }
-         */
-    //}
-
-    return messageRows.joined(separator: "\n")
+func processDroppedURL(
+    _ url: URL,
+    detail: String,
+    sensitivity: String,
+    order: String,
+    fps: String,
+    onFileChange: @escaping @Sendable (String) async -> Void,
+    onMessageChange: @escaping @Sendable (String) async -> Void
+) async {
+    await onMessageChange("ドロップ: \(url.lastPathComponent)")
+    await makeObjectCapture(
+        url: url,
+        detail: detail,
+        sensitivity: sensitivity,
+        order: order,
+        fps: fps,
+        onFileChange: onFileChange,
+        onMessageChange: onMessageChange
+    )
 }
 
 import Foundation
@@ -160,9 +191,29 @@ import RealityKit
 //let outputFolder = "/Users/fukuno/Downloads/week-test/"
 let fps = 2
 
-func runCommand(path: String, arguments: [String]) -> String? {
+enum ConversionError: LocalizedError {
+    case ffmpegNotFound
+    case ffmpegFailed(String)
+    case noImagesGenerated(String)
+
+    var errorDescription: String? {
+        switch self {
+            case .ffmpegNotFound:
+                return "ffmpegが見つかりませんでした。Homebrewで `brew install ffmpeg` を実行してください"
+            case .ffmpegFailed(let output):
+                return "動画の静止画変換に失敗しました: \(output)"
+            case .noImagesGenerated(let outputFolder):
+                return "静止画が生成されませんでした: \(outputFolder)"
+        }
+    }
+}
+
+func runCommand(path: String, arguments: [String]) throws -> String {
     let task = Process()
-    task.launchPath = path
+    guard FileManager.default.isExecutableFile(atPath: path) else {
+        throw ConversionError.ffmpegNotFound
+    }
+    task.executableURL = URL(fileURLWithPath: path)
     task.arguments = arguments
     //task.launchPath = "/bin/bash"
     // task.arguments = ["-c", path] + arguments
@@ -170,34 +221,52 @@ func runCommand(path: String, arguments: [String]) -> String? {
     let pipe = Pipe()
     task.standardOutput = pipe
     task.standardError = pipe
-    task.launch()
+    try task.run()
+    task.waitUntilExit()
     
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    let output = String(data: data, encoding: .utf8)
+    let output = String(data: data, encoding: .utf8) ?? ""
+    guard task.terminationStatus == 0 else {
+        throw ConversionError.ffmpegFailed(output)
+    }
     
     return output
 }
 
-func convertVideoToJPEG(videoPath: String, outputFolder: String, fps: String) {
+func convertVideoToJPEG(videoPath: String, outputFolder: String, fps: String) throws {
     let command = "/opt/homebrew/bin/ffmpeg"
     //let command = "ffmpeg"
     let arguments = [
+        "-y",
         "-i",
         videoPath,
-        "-qmin",
+        "-vf",
+        "fps=\(fps)",
+        "-q:v",
         "1",
-        "-q",
-        "1",
-        "-r",
-        fps,
         "\(outputFolder)/%04d.jpg"
     ]
     
-    let res = runCommand(path: command, arguments: arguments)
-    print(res ?? "no res")
+    let res = try runCommand(path: command, arguments: arguments)
+    print(res)
 }
 
-func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, order: String, view: ContentView) {
+func countGeneratedImages(in outputFolder: String) -> Int {
+    guard let files = try? FileManager.default.contentsOfDirectory(atPath: outputFolder) else {
+        return 0
+    }
+    let imageExtensions = ["jpg", "jpeg", "png", "heic"]
+    return files.filter { imageExtensions.contains(URL(fileURLWithPath: $0).pathExtension.lowercased()) }.count
+}
+
+func makeObjectCaptureFromFolder(
+    url: URL,
+    detail: String,
+    sensitivity: String,
+    order: String,
+    onFileChange: @escaping @Sendable (String) async -> Void,
+    onMessageChange: @escaping @Sendable (String) async -> Void
+) async {
     /*
      https://developer.apple.com/documentation/realitykit/photogrammetrysession/request/detail
     Triangles  Estimated File Size
@@ -225,7 +294,7 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
                 return PhotogrammetrySession.Request.Detail.raw
             default:
                 print("unsupported detail")
-                Foundation.exit(1)
+                return PhotogrammetrySession.Request.Detail.reduced
         }
     }
     func getSensitivity() -> PhotogrammetrySession.Configuration.FeatureSensitivity {
@@ -250,12 +319,12 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
     let order = getOrder()
     
     //let inputFolder = url.absoluteString // arguments[1]
-    let inputFolder = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "/"
-    var outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + ".usdz"
+    let inputFolder = url.path
+    var outputFilename = url.deletingPathExtension().path + ".usdz"
     for i in 2...10000 {
         let checkValidation = FileManager.default
         if (checkValidation.fileExists(atPath: outputFilename)) {
-            outputFilename = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent + "_" + String(i) + ".usdz"
+            outputFilename = url.deletingPathExtension().path + "_" + String(i) + ".usdz"
         } else {
             break
         }
@@ -265,7 +334,7 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
     //let outputFilename = "/Users/fukuno/data/photo/house/img1-test.usdz"
     print(inputFolder)
     print(outputFilename)
-    view.file = inputFolder
+    await onFileChange(inputFolder)
 
     let inputFolderUrl = URL(fileURLWithPath: inputFolder, isDirectory: true)
     let outputUrl = URL(fileURLWithPath: outputFilename, isDirectory: false)
@@ -278,6 +347,7 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
         guard PhotogrammetrySession.isSupported else {
             // Inform user and don't proceed with reconstruction.
             print("not supported PhotogrammetrySession")
+            await onMessageChange("PhotogrammetrySessionに対応していません")
             return
         }
         let session = try PhotogrammetrySession(
@@ -286,28 +356,35 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
         )
 
         let waiter = Task {
+            var finished = false
             for try await output in session.outputs {
                 switch output {
                     case .processingComplete:
                         print("complete!!")
+                        finished = true
                         //Foundation.exit(0)
                     case .inputComplete:
                         print("Output: inputComplete")
                     case .requestError(let r, let s):
                         print("Output: requestError \(r) \(s)")
-                        view.message = "変換中にエラーが発生しました \(r) \(s)"
+                        await onMessageChange("変換中にエラーが発生しました \(r) \(s)")
+                        finished = true
                     
                     case .requestComplete(_, _):
                         print("Output: requestComplete")
-                        view.message = "変換完了！"
-                        NSWorkspace.shared.open(outputUrl)
+                        await onMessageChange("変換完了！")
+                        await MainActor.run {
+                            _ = NSWorkspace.shared.open(outputUrl)
+                        }
 
                     case .requestProgress(_, fractionComplete: let fractionComplete):
                         let progress = String(format: "%.2f", fractionComplete * 100)
                         print("Output: requestProgress \(progress)%")
-                        view.message = "進捗率 \(progress)%"
+                        await onMessageChange("進捗率 \(progress)%")
                     case .processingCancelled:
                         print("Output: processingCancelled")
+                        await onMessageChange("変換をキャンセルしました")
+                        finished = true
                     case .invalidSample(id: _, reason: _):
                         print("Output: invalidSample")
                     case .skippedSample(id: _):
@@ -321,6 +398,9 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
                     @unknown default:
                         print("Output: unhandled message")
                 }
+                if finished {
+                    break
+                }
             }
         }
 
@@ -333,22 +413,35 @@ func makeObjectCaptureFromFolder(url: URL, detail: String, sensitivity: String, 
                 let request = makeRequest()
                 print("Using request: \(String(describing: request))")
                 try session.process(requests: [ request ])
-                RunLoop.main.run()
             } catch {
                 print("Process got error: \(String(describing: error))")
-                Foundation.exit(1)
             }
+        }
+        do {
+            try await waiter.value
+        } catch {
+            print("Waiter got error: \(String(describing: error))")
+            await onMessageChange("変換中にエラーが発生しました \(error)")
         }
     } catch let e {
         print(e)
+        await onMessageChange("変換中にエラーが発生しました \(e)")
     }
 }
 
 
-func makeObjectCapture(url: URL, detail: String, sensitivity: String, order: String, fps: String, view: ContentView) {
+func makeObjectCapture(
+    url: URL,
+    detail: String,
+    sensitivity: String,
+    order: String,
+    fps: String,
+    onFileChange: @escaping @Sendable (String) async -> Void,
+    onMessageChange: @escaping @Sendable (String) async -> Void
+) async {
     let imageExtensions = ["mov", "mp4", "avi"]
     if imageExtensions.contains(url.pathExtension.lowercased()) {
-        let videoPath = String(url.deletingLastPathComponent().absoluteString.dropFirst(7)) + url.lastPathComponent
+        let videoPath = url.path
         print(videoPath)
         let outputFolder = String(videoPath.dropLast(url.pathExtension.count + 1))
         
@@ -364,14 +457,41 @@ func makeObjectCapture(url: URL, detail: String, sensitivity: String, order: Str
         } catch let e {
             print(e)
         }
-        view.file = videoPath
-        view.message = "動画を静止画に変換中..."
-        convertVideoToJPEG(videoPath: videoPath, outputFolder: outputFolder, fps: fps)
+        await onFileChange(videoPath)
+        await onMessageChange("動画を静止画に変換中...")
+        do {
+            try convertVideoToJPEG(videoPath: videoPath, outputFolder: outputFolder, fps: fps)
+        } catch {
+            print(error)
+            await onMessageChange(error.localizedDescription)
+            return
+        }
+        let imageCount = countGeneratedImages(in: outputFolder)
+        guard imageCount > 0 else {
+            let error = ConversionError.noImagesGenerated(outputFolder)
+            print(error)
+            await onMessageChange(error.localizedDescription)
+            return
+        }
+        await onMessageChange("静止画を\(imageCount)枚生成しました。3Dモデルに変換中...")
         let url2 = URL(fileURLWithPath: outputFolder)
         print(url2)
-        makeObjectCaptureFromFolder(url: url2, detail: detail, sensitivity: sensitivity, order: order, view: view)
+        await makeObjectCaptureFromFolder(
+            url: url2,
+            detail: detail,
+            sensitivity: sensitivity,
+            order: order,
+            onFileChange: onFileChange,
+            onMessageChange: onMessageChange
+        )
     } else {
-        makeObjectCaptureFromFolder(url: url, detail: detail, sensitivity: sensitivity, order: order, view: view)
+        await makeObjectCaptureFromFolder(
+            url: url,
+            detail: detail,
+            sensitivity: sensitivity,
+            order: order,
+            onFileChange: onFileChange,
+            onMessageChange: onMessageChange
+        )
     }
 }
-
