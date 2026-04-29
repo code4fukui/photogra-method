@@ -355,6 +355,7 @@ func makeObjectCaptureFromFolder(
             configuration: configure
         )
 
+        var didCompleteRequest = false
         let waiter = Task {
             var finished = false
             for try await output in session.outputs {
@@ -372,7 +373,8 @@ func makeObjectCaptureFromFolder(
                     
                     case .requestComplete(_, _):
                         print("Output: requestComplete")
-                        await onMessageChange("変換完了！")
+                        didCompleteRequest = true
+                        await onMessageChange("変換完了。メモリを解放中...")
                         await MainActor.run {
                             _ = NSWorkspace.shared.open(outputUrl)
                         }
@@ -403,22 +405,29 @@ func makeObjectCaptureFromFolder(
                 }
             }
         }
+        defer {
+            waiter.cancel()
+        }
 
         func makeRequest() -> PhotogrammetrySession.Request {
             return PhotogrammetrySession.Request.modelFile(url: outputUrl, detail: detail)
         }
 
-        withExtendedLifetime((session, waiter)) {
-            do {
-                let request = makeRequest()
-                print("Using request: \(String(describing: request))")
-                try session.process(requests: [ request ])
-            } catch {
-                print("Process got error: \(String(describing: error))")
-            }
+        do {
+            let request = makeRequest()
+            print("Using request: \(String(describing: request))")
+            try session.process(requests: [ request ])
+        } catch {
+            print("Process got error: \(String(describing: error))")
+            await onMessageChange("変換中にエラーが発生しました \(error)")
+            return
         }
+
         do {
             try await waiter.value
+            if didCompleteRequest {
+                await onMessageChange("変換完了！")
+            }
         } catch {
             print("Waiter got error: \(String(describing: error))")
             await onMessageChange("変換中にエラーが発生しました \(error)")
